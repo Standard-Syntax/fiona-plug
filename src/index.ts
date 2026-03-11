@@ -486,3 +486,4 @@ IMPORTANT:
 };
 
 export default OpenCodeConfigPlugin;
+export const FionaPlugin = OpenCodeConfigPlugin;
