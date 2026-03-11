@@ -45,6 +45,20 @@ function detectThinkKeyword(text: string): boolean {
   return THINK_KEYWORDS.some((pattern) => pattern.test(text));
 }
 
+// Helper function for structured logging with fallback to console.warn
+async function logWarning(
+  ctx: {
+    client: { app: { log: (args: { body: { service: string; level: "warn"; message: string } }) => Promise<unknown> } };
+  },
+  message: string,
+): Promise<void> {
+  await ctx.client.app
+    .log({
+      body: { service: "fiona-plug", level: "warn", message: `[fiona-plug] ${message}` },
+    })
+    .catch(() => console.warn(`[fiona-plug] ${message}`));
+}
+
 // MCP server configurations
 const MCP_SERVERS: Record<string, McpLocalConfig> = {
   context7: {
@@ -69,24 +83,13 @@ if (process.env.FIRECRAWL_API_KEY) {
 }
 
 const OpenCodeConfigPlugin: Plugin = async (ctx) => {
-  // Validate external tool dependencies at startup
-  const astGrepStatus = await checkAstGrepAvailable();
-  if (!astGrepStatus.available) {
-    await ctx.client.app
-      .log({
-        body: { service: "fiona-plug", level: "warn", message: `[fiona-plug] ${astGrepStatus.message}` },
-      })
-      .catch(() => console.warn(`[fiona-plug] ${astGrepStatus.message}`));
-  }
+  // Validate external tool dependencies at startup (run concurrently)
+  const [astGrepStatus, btcaStatus] = await Promise.all([checkAstGrepAvailable(), checkBtcaAvailable()]);
 
-  const btcaStatus = await checkBtcaAvailable();
-  if (!btcaStatus.available) {
-    await ctx.client.app
-      .log({
-        body: { service: "fiona-plug", level: "warn", message: `[fiona-plug] ${btcaStatus.message}` },
-      })
-      .catch(() => console.warn(`[fiona-plug] ${btcaStatus.message}`));
-  }
+  await Promise.all([
+    astGrepStatus.available ? Promise.resolve() : logWarning(ctx, astGrepStatus.message ?? "astGrep unavailable"),
+    btcaStatus.available ? Promise.resolve() : logWarning(ctx, btcaStatus.message ?? "btca unavailable"),
+  ]);
 
   // Load user config for agent overrides and feature flags
   const userConfig = await loadMicodeConfig();
@@ -120,13 +123,7 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
     const knownAgentNames = new Set(Object.keys(agents));
     const fragmentAgentNames = Object.keys(userConfig.fragments);
     const warnings = warnUnknownAgents(fragmentAgentNames, knownAgentNames);
-    for (const warning of warnings) {
-      await ctx.client.app
-        .log({
-          body: { service: "fiona-plug", level: "warn", message: warning },
-        })
-        .catch(() => console.warn(warning));
-    }
+    await Promise.all(warnings.map((warning) => logWarning(ctx, warning)));
   }
 
   // Track internal sessions to prevent hook recursion (used by reviewer)
@@ -255,14 +252,8 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
       // Merge user config overrides into plugin agents
       const { agents: mergedAgents, warnings: configWarnings } = mergeAgentConfigs(agents, userConfig);
 
-      // Log config validation warnings
-      for (const warning of configWarnings) {
-        await ctx.client.app
-          .log({
-            body: { service: "fiona-plug", level: "warn", message: warning },
-          })
-          .catch(() => console.warn(warning));
-      }
+      // Log config validation warnings concurrently
+      await Promise.all(configWarnings.map((warning) => logWarning(ctx, warning)));
 
       // Add our agents - our agents override OpenCode defaults, demote built-in build/plan to subagent
       config.agent = {
