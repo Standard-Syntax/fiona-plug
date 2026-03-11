@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-03-11T00:19:58-05:00",
+  "branch": "main",
+  "last_commit": "d735ecf chore: bump version to v0.10.0",
+  "recent_commits": [
+    "d735ecf chore: bump version to v0.10.0",
+    "5df5cfb fix: prevent fetch loops with call tracking and caching (#26) (#36)",
+    "e3e5c77 fix(mindmodel): replace console.warn with structured logger (#35)",
+    "9e63802 fix(pty): graceful degradation when bun-pty native library unavailable (#34)",
+    "ed9f56c feat(config): allow thinking/reasoning config per agent via micode.json (#33)"
+  ],
+  "uncommitted_changes": [
+    "?? .claude/"
+  ]
+}
