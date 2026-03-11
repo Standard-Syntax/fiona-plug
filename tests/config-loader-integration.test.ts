@@ -39,7 +39,7 @@ describe("config-loader integration", () => {
 
     const availableModels = new Set(["openai/gpt-4o", DEFAULT_MODEL]);
 
-    const merged = mergeAgentConfigs(agents, userConfig, availableModels);
+    const { agents: merged } = mergeAgentConfigs(agents, userConfig, availableModels);
 
     // Check mm-orchestrator was merged correctly
     expect(merged["mm-orchestrator"]).toBeDefined();
@@ -60,7 +60,7 @@ describe("config-loader integration", () => {
 
     const availableModels = new Set(["openai/gpt-4o", DEFAULT_MODEL]);
 
-    const merged = mergeAgentConfigs(agents, userConfig, availableModels);
+    const { agents: merged } = mergeAgentConfigs(agents, userConfig, availableModels);
 
     const mo = merged["mm-orchestrator"];
     expect(mo.model).toBe("openai/gpt-4o");

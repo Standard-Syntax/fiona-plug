@@ -72,12 +72,20 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
   // Validate external tool dependencies at startup
   const astGrepStatus = await checkAstGrepAvailable();
   if (!astGrepStatus.available) {
-    console.warn(`[fiona-plug] ${astGrepStatus.message}`);
+    await ctx.client.app
+      .log({
+        body: { service: "fiona-plug", level: "warn", message: `[fiona-plug] ${astGrepStatus.message}` },
+      })
+      .catch(() => console.warn(`[fiona-plug] ${astGrepStatus.message}`));
   }
 
   const btcaStatus = await checkBtcaAvailable();
   if (!btcaStatus.available) {
-    console.warn(`[fiona-plug] ${btcaStatus.message}`);
+    await ctx.client.app
+      .log({
+        body: { service: "fiona-plug", level: "warn", message: `[fiona-plug] ${btcaStatus.message}` },
+      })
+      .catch(() => console.warn(`[fiona-plug] ${btcaStatus.message}`));
   }
 
   // Load user config for agent overrides and feature flags
@@ -113,7 +121,11 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
     const fragmentAgentNames = Object.keys(userConfig.fragments);
     const warnings = warnUnknownAgents(fragmentAgentNames, knownAgentNames);
     for (const warning of warnings) {
-      console.warn(warning);
+      await ctx.client.app
+        .log({
+          body: { service: "fiona-plug", level: "warn", message: warning },
+        })
+        .catch(() => console.warn(warning));
     }
   }
 
@@ -241,7 +253,16 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
       };
 
       // Merge user config overrides into plugin agents
-      const mergedAgents = mergeAgentConfigs(agents, userConfig);
+      const { agents: mergedAgents, warnings: configWarnings } = mergeAgentConfigs(agents, userConfig);
+
+      // Log config validation warnings
+      for (const warning of configWarnings) {
+        await ctx.client.app
+          .log({
+            body: { service: "fiona-plug", level: "warn", message: warning },
+          })
+          .catch(() => console.warn(warning));
+      }
 
       // Add our agents - our agents override OpenCode defaults, demote built-in build/plan to subagent
       config.agent = {
