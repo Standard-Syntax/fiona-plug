@@ -1,6 +1,8 @@
 import type { PluginInput } from "@opencode-ai/plugin";
 import { type ToolContext, tool } from "@opencode-ai/plugin/tool";
 
+import { log } from "../utils/logger";
+
 // Extended context with metadata (available but not typed in plugin API)
 // Using intersection to add optional metadata without type conflict
 type ExtendedContext = ToolContext & {
@@ -51,13 +53,14 @@ export function createSpawnAgentTool(ctx: PluginInput) {
 
     updateProgress(`Running ${agent}...`);
 
+    let sessionID: string | undefined;
     try {
       const sessionResp = (await ctx.client.session.create({
         body: {},
         query: { directory: ctx.directory },
       })) as SessionCreateResponse;
 
-      const sessionID = sessionResp.data?.id;
+      sessionID = sessionResp.data?.id;
       if (!sessionID) {
         return `## ${description}\n\n**Agent**: ${agent}\n**Error**: Failed to create session`;
       }
@@ -85,18 +88,25 @@ export function createSpawnAgentTool(ctx: PluginInput) {
           .map((p) => p.text)
           .join("\n") || "(No response from agent)";
 
-      await ctx.client.session
-        .delete({
-          path: { id: sessionID },
-          query: { directory: ctx.directory },
-        })
-        .catch(() => {});
-
       const agentTime = ((Date.now() - agentStartTime) / 1000).toFixed(1);
       return `## ${description} (${agentTime}s)\n\n**Agent**: ${agent}\n\n### Result\n\n${result}`;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       return `## ${description}\n\n**Agent**: ${agent}\n**Error**: ${errorMsg}`;
+    } finally {
+      if (sessionID) {
+        await ctx.client.session
+          .delete({
+            path: { id: sessionID },
+            query: { directory: ctx.directory },
+          })
+          .catch((error) =>
+            log.warn(
+              "spawn-agent",
+              `Failed to delete session ${sessionID}: ${error instanceof Error ? error.message : "unknown"}`,
+            ),
+          );
+      }
     }
   }
 
