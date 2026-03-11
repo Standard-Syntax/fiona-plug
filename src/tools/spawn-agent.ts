@@ -51,13 +51,14 @@ export function createSpawnAgentTool(ctx: PluginInput) {
 
     updateProgress(`Running ${agent}...`);
 
+    let sessionID: string | undefined;
     try {
       const sessionResp = (await ctx.client.session.create({
         body: {},
         query: { directory: ctx.directory },
       })) as SessionCreateResponse;
 
-      const sessionID = sessionResp.data?.id;
+      sessionID = sessionResp.data?.id;
       if (!sessionID) {
         return `## ${description}\n\n**Agent**: ${agent}\n**Error**: Failed to create session`;
       }
@@ -85,18 +86,20 @@ export function createSpawnAgentTool(ctx: PluginInput) {
           .map((p) => p.text)
           .join("\n") || "(No response from agent)";
 
-      await ctx.client.session
-        .delete({
-          path: { id: sessionID },
-          query: { directory: ctx.directory },
-        })
-        .catch(() => {});
-
       const agentTime = ((Date.now() - agentStartTime) / 1000).toFixed(1);
       return `## ${description} (${agentTime}s)\n\n**Agent**: ${agent}\n\n### Result\n\n${result}`;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       return `## ${description}\n\n**Agent**: ${agent}\n**Error**: ${errorMsg}`;
+    } finally {
+      if (sessionID) {
+        await ctx.client.session
+          .delete({
+            path: { id: sessionID },
+            query: { directory: ctx.directory },
+          })
+          .catch(() => {});
+      }
     }
   }
 
