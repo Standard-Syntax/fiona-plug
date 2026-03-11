@@ -5,16 +5,6 @@ import { tool } from "@opencode-ai/plugin/tool";
 import { formatExamplesForInjection, type LoadedMindmodel, loadExamples, loadMindmodel } from "../mindmodel";
 import { log } from "../utils/logger";
 
-let cachedMindmodel: LoadedMindmodel | null | undefined;
-
-async function getMindmodel(directory: string): Promise<LoadedMindmodel | null> {
-  if (cachedMindmodel === undefined) {
-    cachedMindmodel = await loadMindmodel(directory);
-  }
-  return cachedMindmodel;
-}
-
-// Simple keyword-based category matching (no LLM needed)
 export function matchCategories(query: string, manifest: LoadedMindmodel["manifest"]): string[] {
   const queryLower = query.toLowerCase();
   const matched: string[] = [];
@@ -38,6 +28,15 @@ export function matchCategories(query: string, manifest: LoadedMindmodel["manife
 }
 
 export function createMindmodelLookupTool(ctx: PluginInput) {
+  let cachedMindmodel: LoadedMindmodel | null | undefined;
+
+  async function getMindmodel(): Promise<LoadedMindmodel | null> {
+    if (cachedMindmodel === undefined) {
+      cachedMindmodel = await loadMindmodel(ctx.directory);
+    }
+    return cachedMindmodel;
+  }
+
   const mindmodel_lookup = tool({
     description: `Look up coding patterns and examples from the project's .mindmodel/ directory.
 Call this tool when you need to understand how to implement something in this codebase.
@@ -50,7 +49,7 @@ Returns relevant code examples and patterns to follow.`,
     },
     execute: async ({ query }) => {
       try {
-        const mindmodel = await getMindmodel(ctx.directory);
+        const mindmodel = await getMindmodel();
         if (!mindmodel) {
           return "No .mindmodel/ directory found in this project. Proceed without specific patterns.";
         }
