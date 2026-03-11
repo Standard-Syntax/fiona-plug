@@ -159,7 +159,7 @@ describe("mergeAgentConfigs", () => {
     };
     const availableModels = new Set(["openai/gpt-4o", "anthropic/claude-opus-4-5"]);
 
-    const merged = mergeAgentConfigs(pluginAgents, userConfig, availableModels);
+    const { agents: merged } = mergeAgentConfigs(pluginAgents, userConfig, availableModels);
 
     expect(merged.commander.model).toBe("openai/gpt-4o");
     expect(merged.commander.temperature).toBe(0.5);
@@ -187,7 +187,7 @@ describe("mergeAgentConfigs", () => {
     };
     const availableModels = new Set(["openai/gpt-4o", "anthropic/claude-opus-4-5"]);
 
-    const merged = mergeAgentConfigs(pluginAgents, userConfig, availableModels);
+    const { agents: merged } = mergeAgentConfigs(pluginAgents, userConfig, availableModels);
 
     expect(merged.commander.model).toBe("openai/gpt-4o");
     expect(merged.brainstormer.model).toBe("anthropic/claude-opus-4-5");
@@ -202,7 +202,7 @@ describe("mergeAgentConfigs", () => {
     };
 
     // Pass explicit null for defaultModel to avoid loading from disk
-    const merged = mergeAgentConfigs(pluginAgents, null, undefined, null);
+    const { agents: merged } = mergeAgentConfigs(pluginAgents, null, undefined, null);
 
     expect(merged.commander.model).toBe("anthropic/claude-opus-4-5");
   });
@@ -222,7 +222,7 @@ describe("mergeAgentConfigs", () => {
     const availableModels = new Set([DEFAULT_MODEL, "github-copilot/gpt-5-mini"]);
     const defaultModel = "github-copilot/gpt-5-mini";
 
-    const merged = mergeAgentConfigs(pluginAgents, null, availableModels, defaultModel);
+    const { agents: merged } = mergeAgentConfigs(pluginAgents, null, availableModels, defaultModel);
 
     // Both agents should use the opencode default model
     expect(merged.commander.model).toBe("github-copilot/gpt-5-mini");
@@ -249,7 +249,7 @@ describe("mergeAgentConfigs", () => {
     const availableModels = new Set([DEFAULT_MODEL, "github-copilot/gpt-5-mini", "openai/gpt-4o"]);
     const defaultModel = "github-copilot/gpt-5-mini";
 
-    const merged = mergeAgentConfigs(pluginAgents, userConfig, availableModels, defaultModel);
+    const { agents: merged } = mergeAgentConfigs(pluginAgents, userConfig, availableModels, defaultModel);
 
     // Commander has explicit override - should use that
     expect(merged.commander.model).toBe("openai/gpt-4o");
@@ -268,7 +268,7 @@ describe("mergeAgentConfigs", () => {
     const availableModels = new Set([DEFAULT_MODEL]);
     const defaultModel = "invalid/nonexistent-model";
 
-    const merged = mergeAgentConfigs(pluginAgents, null, availableModels, defaultModel);
+    const { agents: merged } = mergeAgentConfigs(pluginAgents, null, availableModels, defaultModel);
 
     // Invalid default should be skipped - keep plugin default
     expect(merged.commander.model).toBe(DEFAULT_MODEL);

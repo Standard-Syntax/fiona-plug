@@ -147,6 +147,14 @@ export interface MicodeConfig {
 }
 
 /**
+ * Result of merging agent configs with validation warnings
+ */
+export interface ValidatedAgents {
+  agents: Record<string, AgentConfig>;
+  warnings: string[];
+}
+
+/**
  * Load fiona-plug.json/fiona-plug.jsonc from ~/.config/opencode/
  * Returns null if file doesn't exist or is invalid
  * @param configDir - Optional override for config directory (for testing)
@@ -274,10 +282,11 @@ export function mergeAgentConfigs(
   userConfig: MicodeConfig | null,
   availableModels?: Set<string>,
   defaultModel?: string | null,
-): Record<string, AgentConfig> {
+): ValidatedAgents {
   const models = availableModels ?? loadAvailableModels();
   const shouldValidateModels = models.size > 0;
   const opencodeDefaultModel = defaultModel ?? loadDefaultModel();
+  const warnings: string[] = [];
 
   // Helper to validate a model string
   const isValidModel = (model: string): boolean => {
@@ -306,9 +315,9 @@ export function mergeAgentConfigs(
           // Model is valid - apply all overrides including model
           finalConfig = { ...finalConfig, ...userOverride };
         } else {
-          // Model is invalid - log warning and apply other overrides only
+          // Model is invalid - collect warning and apply other overrides only
           const fallbackModel = finalConfig.model || "DEFAULT_MODEL";
-          console.warn(
+          warnings.push(
             `[fiona-plug] Model "${userOverride.model}" for agent "${name}" is not available. Using ${fallbackModel}.`,
           );
           const { model: _ignored, ...safeOverrides } = userOverride;
@@ -323,7 +332,7 @@ export function mergeAgentConfigs(
     merged[name] = finalConfig;
   }
 
-  return merged;
+  return { agents: merged, warnings };
 }
 
 /**
