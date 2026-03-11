@@ -309,7 +309,7 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
       // Log for breakage detection - this is an undocumented hook
       await ctx.client.app
         .log({
-          body: { service: "fiona-plug", level: "debug", message: "chat.message hook fired (undocumented hook)" },
+          body: { service: "fiona-plug", level: "debug", message: "chat.message hook fired for think-mode detection (undocumented hook)" },
         })
         .catch(() => {});
 
