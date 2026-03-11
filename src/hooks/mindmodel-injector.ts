@@ -64,8 +64,8 @@ export function createMindmodelInjectorHook(ctx: PluginInput) {
   let cachedMindmodel: LoadedMindmodel | null | undefined;
   let cachedSystemMd: string | null | undefined;
 
-  // Pending injection content (shared across hooks for current request)
-  let pendingInjection: string | null = null;
+  // Pending injection content per session (sessionID -> injection)
+  const pendingInjections = new Map<string, string>();
 
   // LRU cache for matched tasks (uses hashed keys)
   const matchedTasks = new LRUCache<string>(2000);
@@ -101,6 +101,10 @@ export function createMindmodelInjectorHook(ctx: PluginInput) {
       .join(" ");
   }
 
+  function cleanupSession(sessionID: string): void {
+    pendingInjections.delete(sessionID);
+  }
+
   return {
     // Hook 1: Extract task from messages and prepare injection
     "experimental.chat.messages.transform": async (
@@ -118,11 +122,17 @@ export function createMindmodelInjectorHook(ctx: PluginInput) {
           return;
         }
 
+        const sessionID = (_input as { sessionID?: string }).sessionID ?? "default";
+
         // Check cache first
         const taskHash = hashTask(task);
         const cachedInjection = matchedTasks.get(taskHash);
         if (cachedInjection !== undefined) {
-          pendingInjection = cachedInjection || null;
+          if (cachedInjection) {
+            pendingInjections.set(sessionID, cachedInjection);
+          } else {
+            pendingInjections.delete(sessionID);
+          }
           return;
         }
 
@@ -144,7 +154,7 @@ export function createMindmodelInjectorHook(ctx: PluginInput) {
         const formatted = formatExamplesForInjection(examples);
 
         // Store for the system transform hook and cache for future requests
-        pendingInjection = formatted;
+        pendingInjections.set(sessionID, formatted);
         matchedTasks.set(taskHash, formatted);
       } catch {
         // Silently ignore errors - don't break the main flow
@@ -159,12 +169,15 @@ export function createMindmodelInjectorHook(ctx: PluginInput) {
         output.system.unshift(`<mindmodel-constraints>\n${systemMd}\n</mindmodel-constraints>`);
       }
 
-      // Add keyword-matched patterns if any
-      if (pendingInjection) {
-        const injection = pendingInjection;
-        pendingInjection = null;
+      // Add keyword-matched patterns if any (session-scoped)
+      const sessionID = (_input as { sessionID?: string }).sessionID ?? "default";
+      const injection = pendingInjections.get(sessionID);
+      if (injection) {
+        pendingInjections.delete(sessionID);
         output.system.unshift(injection);
       }
     },
+
+    cleanupSession,
   };
 }

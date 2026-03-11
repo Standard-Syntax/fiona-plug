@@ -165,4 +165,43 @@ categories:
     expect(system1[0]).toContain("mindmodel-examples");
     expect(system2[0]).toContain("mindmodel-examples");
   });
+
+  it("should keep injections separate for concurrent sessions", async () => {
+    setupMindmodel(testDir);
+
+    const { createMindmodelInjectorHook } = await import("../../src/hooks/mindmodel-injector");
+
+    const ctx = createMockCtx(testDir);
+    const hook = createMindmodelInjectorHook(ctx as any);
+
+    // Simulate concurrent sessions by running both flows "simultaneously"
+    // In real scenario they'd be interleaved, but we verify each session
+    // gets its own injection by using different sessionIDs
+
+    // Session A: "button" keyword
+    const sessionA = "session-a";
+    const messagesA = [{ info: { role: "user" }, parts: [{ type: "text", text: "Add a button" }] }];
+
+    // Session B: "form" keyword
+    const sessionB = "session-b";
+    const messagesB = [{ info: { role: "user" }, parts: [{ type: "text", text: "Add a form" }] }];
+
+    // Run both message transforms
+    await hook["experimental.chat.messages.transform"]({ sessionID: sessionA }, { messages: messagesA });
+    await hook["experimental.chat.messages.transform"]({ sessionID: sessionB }, { messages: messagesB });
+
+    // Run both system transforms
+    const systemA = { system: ["existing"] };
+    const systemB = { system: ["existing"] };
+
+    await hook["experimental.chat.system.transform"]({ sessionID: sessionA }, systemA);
+    await hook["experimental.chat.system.transform"]({ sessionID: sessionB }, systemB);
+
+    // Verify each session got its own injection
+    expect(systemA.system[0]).toContain("Button");
+    expect(systemA.system[0]).not.toContain("Form");
+
+    expect(systemB.system[0]).toContain("Form");
+    expect(systemB.system[0]).not.toContain("Button");
+  });
 });

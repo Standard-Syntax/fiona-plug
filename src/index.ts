@@ -500,6 +500,7 @@ IMPORTANT:
           ptyManager.cleanupBySession(sessionId);
           constraintReviewerHook.cleanupSession(sessionId);
           fetchTrackerHook.cleanupSession(sessionId);
+          mindmodelInjectorHook?.cleanupSession(sessionId);
 
           // Cleanup octto sessions
           const octtoSessions = octtoSessionsMap.get(sessionId);
