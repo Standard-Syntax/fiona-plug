@@ -1,6 +1,8 @@
 import type { PluginInput } from "@opencode-ai/plugin";
 import { type ToolContext, tool } from "@opencode-ai/plugin/tool";
 
+import { log } from "../utils/logger";
+
 // Extended context with metadata (available but not typed in plugin API)
 // Using intersection to add optional metadata without type conflict
 type ExtendedContext = ToolContext & {
@@ -98,7 +100,12 @@ export function createSpawnAgentTool(ctx: PluginInput) {
             path: { id: sessionID },
             query: { directory: ctx.directory },
           })
-          .catch(() => {});
+          .catch((error) =>
+            log.warn(
+              "spawn-agent",
+              `Failed to delete session ${sessionID}: ${error instanceof Error ? error.message : "unknown"}`,
+            ),
+          );
       }
     }
   }
