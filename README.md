@@ -87,6 +87,22 @@ Maintain context across sessions with structured compaction. Run `/ledger` to cr
 - **Context Injector** - Injects ARCHITECTURE.md, CODE_STYLE.md
 - **Token-Aware Truncation** - Truncates large tool outputs
 
+## Undocumented Hooks
+
+This plugin relies on some hooks that are not documented in the official opencode plugin API:
+
+| Hook | Purpose | Risk |
+|------|---------|------|
+| `chat.message` | Think-mode keyword detection, override command detection | High - may break silently |
+| `experimental.chat.messages.transform` | Mindmodel task extraction | High - may break silently |
+
+These hooks were inherited from the upstream "micode" project and work in practice, but are not officially supported by opencode. See [GitHub Issue #5](https://github.com/Standard-Syntax/fiona-plug/issues/5) for details.
+
+**If these hooks break**, the following features will stop working:
+- Think mode (automatic thinking budget boost when using "think deeply" etc.)
+- Override commands (`override: <reason>`)
+- Mindmodel task extraction and category-based system prompt injection
+
 ## Configuration
 
 ### Model Configuration
