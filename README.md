@@ -1,7 +1,7 @@
-# micode
+# fiona-plug
 
-[![CI](https://github.com/vtemian/micode/actions/workflows/ci.yml/badge.svg)](https://github.com/vtemian/micode/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/micode.svg)](https://www.npmjs.com/package/micode)
+[![CI](https://github.com/Standard-Syntax/fiona-plug/actions/workflows/ci.yml/badge.svg)](https://github.com/Standard-Syntax/fiona-plug/actions/workflows/ci.yml)
+[![npm version](https://badge.fury.io/js/fiona-plug.svg)](https://www.npmjs.com/package/fiona-plug)
 
 OpenCode plugin with structured Brainstorm → Plan → Implement workflow and session continuity.
 
@@ -12,7 +12,7 @@ https://github.com/user-attachments/assets/85236ad3-e78a-4ff7-a840-620f6ea2f512
 Add to `~/.config/opencode/opencode.json`:
 
 ```json
-{ "plugin": ["micode"] }
+{ "plugin": ["fiona-plug"] }
 ```
 
 Then run `/init` to generate `ARCHITECTURE.md` and `CODE_STYLE.md`.
@@ -91,20 +91,20 @@ Maintain context across sessions with structured compaction. Run `/ledger` to cr
 
 ### Model Configuration
 
-micode reads your default model from `opencode.json`:
+fiona-plug reads your default model from `opencode.json`:
 
 ```json
 {
   "model": "github-copilot/gpt-5-mini",
-  "plugin": ["micode"]
+  "plugin": ["fiona-plug"]
 }
 ```
 
-All micode agents will use this model automatically.
+All fiona-plug agents will use this model automatically.
 
-### micode.json
+### fiona-plug.json
 
-Create `~/.config/opencode/micode.json` for micode-specific settings:
+Create `~/.config/opencode/fiona-plug.json` for fiona-plug-specific settings:
 
 ```jsonc
 {
@@ -139,7 +139,7 @@ Create `~/.config/opencode/micode.json` for micode-specific settings:
 
 #### Model Resolution Priority
 
-1. Per-agent override in `micode.json` (highest)
+1. Per-agent override in `fiona-plug.json` (highest)
 2. Default model from `opencode.json` `"model"` field
 3. Plugin default (fallback)
 
@@ -162,13 +162,13 @@ Use `"model": "github-copilot/gpt-5-mini"` (not `github/copilot:gpt-5-mini`).
 ## Development
 
 ```bash
-git clone git@github.com:vtemian/micode.git ~/.micode
-cd ~/.micode && bun install && bun run build
+git clone git@github.com:vtemian/fiona-plug.git ~/.fiona-plug
+cd ~/.fiona-plug && bun install && bun run build
 ```
 
 ```json
 // Use local path
-{ "plugin": ["~/.micode"] }
+{ "plugin": ["~/.fiona-plug"] }
 ```
 
 ### Release
@@ -188,11 +188,11 @@ git push --follow-tags
 6. **Continuous verification** - Implementer + Reviewer per task
 7. **Session continuity** - Never lose context
 
-## micode vs oh-my-opencode
+## fiona-plug vs oh-my-opencode
 
 Both are OpenCode plugins, but with different philosophies:
 
-| Aspect | micode | oh-my-opencode |
+| Aspect | fiona-plug | oh-my-opencode |
 |--------|--------|----------------|
 | **Philosophy** | Opinionated workflow (brainstorm→plan→implement) | Batteries-included framework |
 | **Agent Design** | Role-based (Brainstormer, Planner, Executor) | Greek mythology theme (Sisyphus, Atlas, Prometheus) |
@@ -202,7 +202,7 @@ Both are OpenCode plugins, but with different philosophies:
 | **Workflow** | TDD-enforced with adaptation over escalation | Category-based delegation (visual-engineering, ultrabrain) |
 | **Configuration** | Focused options | Extensive (34 hooks, 11 agents, fallback chains) |
 
-### When to Choose micode
+### When to Choose fiona-plug
 
 - You want a **structured brainstorm→plan→implement workflow**
 - You prefer **TDD-driven implementation** with test-first development

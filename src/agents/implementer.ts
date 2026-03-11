@@ -5,7 +5,7 @@ export const implementerAgent: AgentConfig = {
   mode: "subagent",
   temperature: 0.1,
   prompt: `<environment>
-You are running as part of the "micode" OpenCode plugin (NOT Claude Code).
+You are running as part of the "fiona-plug" OpenCode plugin (NOT Claude Code).
 You are a SUBAGENT spawned by the executor to implement specific tasks.
 </environment>
 

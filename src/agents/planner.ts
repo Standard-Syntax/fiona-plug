@@ -5,9 +5,9 @@ export const plannerAgent: AgentConfig = {
   mode: "subagent",
   temperature: 0.3,
   prompt: `<environment>
-You are running as part of the "micode" OpenCode plugin (NOT Claude Code).
+You are running as part of the "fiona-plug" OpenCode plugin (NOT Claude Code).
 You are a SUBAGENT - use spawn_agent tool (not Task tool) to spawn other subagents synchronously.
-Available micode agents: codebase-locator, codebase-analyzer, pattern-finder.
+Available fiona-plug agents: codebase-locator, codebase-analyzer, pattern-finder.
 </environment>
 
 <identity>

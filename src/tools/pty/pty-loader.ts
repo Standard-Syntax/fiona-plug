@@ -2,12 +2,12 @@
 // Resolves bun-pty native library path and loads bun-pty with graceful degradation.
 //
 // bun-pty's resolveLibPath() checks BUN_PTY_LIB env var first, then hardcoded paths
-// relative to import.meta.url. When micode is installed as an OpenCode plugin,
+// relative to import.meta.url. When fiona-plug is installed as an OpenCode plugin,
 // the library ends up in .opencode/node_modules/bun-pty/... which isn't in the
 // hardcoded search paths. We fix this by probing likely locations and setting
 // BUN_PTY_LIB before the dynamic import.
 //
-// See: https://github.com/vtemian/micode/issues/20
+// See: https://github.com/Standard-Syntax/fiona-plug/issues/20
 // See: https://github.com/anomalyco/opencode/issues/10556
 
 import { existsSync } from "node:fs";
@@ -50,8 +50,8 @@ function probeBunPtyLib(): void {
   const additionalBasePaths = [
     // .opencode/node_modules/bun-pty/... (plugin installed via .opencode/package.json)
     join(cwd, ".opencode", "node_modules", "bun-pty", "rust-pty", "target", "release"),
-    // .micode/node_modules/bun-pty/... (if micode has its own node_modules)
-    join(cwd, ".micode", "node_modules", "bun-pty", "rust-pty", "target", "release"),
+    // .fiona-plug/node_modules/bun-pty/... (if fiona-plug has its own node_modules)
+    join(cwd, ".fiona-plug", "node_modules", "bun-pty", "rust-pty", "target", "release"),
   ];
 
   // Also try resolving from require.resolve if available
