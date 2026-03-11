@@ -232,7 +232,7 @@ describe("JSONC parsing via loadMicodeConfig", () => {
   let testConfigDir: string;
 
   beforeEach(() => {
-    testConfigDir = join(tmpdir(), `micode-jsonc-unit-test-${Date.now()}`);
+    testConfigDir = join(tmpdir(), `fiona-plug-jsonc-unit-test-${Date.now()}`);
     mkdirSync(testConfigDir, { recursive: true });
   });
 
@@ -242,7 +242,7 @@ describe("JSONC parsing via loadMicodeConfig", () => {
 
   test("parses .jsonc file with comments and trailing commas", async () => {
     writeFileSync(
-      join(testConfigDir, "micode.jsonc"),
+      join(testConfigDir, "fiona-plug.jsonc"),
       `{
   // Agent configuration
   "agents": {
@@ -263,7 +263,7 @@ describe("JSONC parsing via loadMicodeConfig", () => {
 
   test("still parses plain .json files (backward compatibility)", async () => {
     writeFileSync(
-      join(testConfigDir, "micode.json"),
+      join(testConfigDir, "fiona-plug.json"),
       JSON.stringify({
         agents: { commander: { model: "openai/gpt-4o" } },
       }),

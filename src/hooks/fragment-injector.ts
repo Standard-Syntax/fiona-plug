@@ -7,11 +7,11 @@ import type { PluginInput } from "@opencode-ai/plugin";
 import type { MicodeConfig } from "../config-loader";
 
 /**
- * Load project-level fragments from .micode/fragments.json
+ * Load project-level fragments from .fiona-plug/fragments.json
  * Returns empty object if file doesn't exist or is invalid
  */
 export async function loadProjectFragments(projectDir: string): Promise<Record<string, string[]>> {
-  const fragmentsPath = join(projectDir, ".micode", "fragments.json");
+  const fragmentsPath = join(projectDir, ".fiona-plug", "fragments.json");
 
   try {
     const content = await readFile(fragmentsPath, "utf-8");
@@ -129,9 +129,9 @@ export function warnUnknownAgents(fragmentAgents: string[], knownAgents: Set<str
     if (!knownAgents.has(agent)) {
       const closest = findClosestAgent(agent, knownAgents);
       if (closest) {
-        warnings.push(`[micode] Unknown agent "${agent}" in fragments config. Did you mean "${closest}"?`);
+        warnings.push(`[fiona-plug] Unknown agent "${agent}" in fragments config. Did you mean "${closest}"?`);
       } else {
-        warnings.push(`[micode] Unknown agent "${agent}" in fragments config.`);
+        warnings.push(`[fiona-plug] Unknown agent "${agent}" in fragments config.`);
       }
     }
   }

@@ -147,7 +147,7 @@ export interface MicodeConfig {
 }
 
 /**
- * Load micode.json/micode.jsonc from ~/.config/opencode/
+ * Load fiona-plug.json/fiona-plug.jsonc from ~/.config/opencode/
  * Returns null if file doesn't exist or is invalid
  * @param configDir - Optional override for config directory (for testing)
  */
@@ -155,7 +155,7 @@ export async function loadMicodeConfig(configDir?: string): Promise<MicodeConfig
   const baseDir = configDir ?? join(homedir(), ".config", "opencode");
 
   try {
-    const content = await readConfigFileAsync(baseDir, "micode");
+    const content = await readConfigFileAsync(baseDir, "fiona-plug");
     if (!content) return null;
 
     const parsed = parseConfigJson(content) as Record<string, unknown>;
@@ -265,7 +265,7 @@ export function loadModelContextLimits(configDir?: string): Map<string, number> 
  * Invalid models are logged and skipped (agent uses opencode default)
  *
  * Model resolution priority:
- * 1. Per-agent override in micode.json (highest)
+ * 1. Per-agent override in fiona-plug.json (highest)
  * 2. Default model from opencode.json "model" field
  * 3. DEFAULT_MODEL from config (plugin fallback)
  */
@@ -299,7 +299,7 @@ export function mergeAgentConfigs(
       finalConfig = { ...finalConfig, model: opencodeDefaultModel };
     }
 
-    // Apply user overrides from micode.json (highest priority)
+    // Apply user overrides from fiona-plug.json (highest priority)
     if (userOverride) {
       if (userOverride.model) {
         if (isValidModel(userOverride.model)) {
@@ -309,7 +309,7 @@ export function mergeAgentConfigs(
           // Model is invalid - log warning and apply other overrides only
           const fallbackModel = finalConfig.model || "DEFAULT_MODEL";
           console.warn(
-            `[micode] Model "${userOverride.model}" for agent "${name}" is not available. Using ${fallbackModel}.`,
+            `[fiona-plug] Model "${userOverride.model}" for agent "${name}" is not available. Using ${fallbackModel}.`,
           );
           const { model: _ignored, ...safeOverrides } = userOverride;
           finalConfig = { ...finalConfig, ...safeOverrides };
@@ -359,7 +359,7 @@ export function validateAgentModels(userConfig: MicodeConfig, providers: Provide
     const trimmedModel = override.model.trim();
     if (!trimmedModel) {
       const { model: _removed, ...otherProps } = override;
-      console.warn(`[micode] Empty model for agent "${agentName}". Using default model.`);
+      console.warn(`[fiona-plug] Empty model for agent "${agentName}". Using default model.`);
       if (Object.keys(otherProps).length > 0) {
         validatedAgents[agentName] = otherProps;
       }
@@ -384,7 +384,7 @@ export function validateAgentModels(userConfig: MicodeConfig, providers: Provide
     } else {
       // Remove invalid model but keep other properties
       const { model: _removed, ...otherProps } = override;
-      console.warn(`[micode] Model "${override.model}" not found for agent "${agentName}". Using default model.`);
+      console.warn(`[fiona-plug] Model "${override.model}" not found for agent "${agentName}". Using default model.`);
       if (Object.keys(otherProps).length > 0) {
         validatedAgents[agentName] = otherProps;
       }

@@ -4,7 +4,7 @@
 
 **Goal:** Allow users to customize agent behavior by appending prompt fragments via external config.
 
-**Architecture:** Two-layer config (global `micode.json` + project `.micode/fragments.json`), fragments concatenated and injected at beginning of agent system prompts via a new hook.
+**Architecture:** Two-layer config (global `fiona-plug.json` + project `.fiona-plug/fragments.json`), fragments concatenated and injected at beginning of agent system prompts via a new hook.
 
 **Tech Stack:** TypeScript, Bun test runner, existing hook architecture
 
@@ -27,7 +27,7 @@ describe("loadMicodeConfig - fragments", () => {
   let testConfigDir: string;
 
   beforeEach(() => {
-    testConfigDir = join(tmpdir(), `micode-config-test-${Date.now()}`);
+    testConfigDir = join(tmpdir(), `fiona-plug-config-test-${Date.now()}`);
     mkdirSync(testConfigDir, { recursive: true });
   });
 
@@ -35,8 +35,8 @@ describe("loadMicodeConfig - fragments", () => {
     rmSync(testConfigDir, { recursive: true, force: true });
   });
 
-  it("should load fragments from micode.json", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+  it("should load fragments from fiona-plug.json", async () => {
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -55,7 +55,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should handle empty fragments object", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(configPath, JSON.stringify({ fragments: {} }));
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -64,7 +64,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should filter out non-string values in fragment arrays", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -80,7 +80,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should filter out empty strings from fragments", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -96,7 +96,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should skip non-array fragment values", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -212,12 +212,12 @@ describe("fragment-injector", () => {
   });
 
   describe("loadProjectFragments", () => {
-    it("should load fragments from .micode/fragments.json", async () => {
-      // Create .micode directory and fragments.json
-      const micodeDir = join(testDir, ".micode");
-      mkdirSync(micodeDir, { recursive: true });
+    it("should load fragments from .fiona-plug/fragments.json", async () => {
+      // Create .fiona-plug directory and fragments.json
+      const fiona-plugDir = join(testDir, ".fiona-plug");
+      mkdirSync(fiona-plugDir, { recursive: true });
       writeFileSync(
-        join(micodeDir, "fragments.json"),
+        join(fiona-plugDir, "fragments.json"),
         JSON.stringify({
           brainstormer: ["Project-specific instruction"],
           implementer: ["Run tests after changes"],
@@ -231,7 +231,7 @@ describe("fragment-injector", () => {
       expect(fragments.implementer).toEqual(["Run tests after changes"]);
     });
 
-    it("should return empty object when .micode/fragments.json does not exist", async () => {
+    it("should return empty object when .fiona-plug/fragments.json does not exist", async () => {
       const { loadProjectFragments } = await import("../../src/hooks/fragment-injector");
       const fragments = await loadProjectFragments(testDir);
 
@@ -239,9 +239,9 @@ describe("fragment-injector", () => {
     });
 
     it("should return empty object for invalid JSON", async () => {
-      const micodeDir = join(testDir, ".micode");
-      mkdirSync(micodeDir, { recursive: true });
-      writeFileSync(join(micodeDir, "fragments.json"), "{ invalid json }");
+      const fiona-plugDir = join(testDir, ".fiona-plug");
+      mkdirSync(fiona-plugDir, { recursive: true });
+      writeFileSync(join(fiona-plugDir, "fragments.json"), "{ invalid json }");
 
       const { loadProjectFragments } = await import("../../src/hooks/fragment-injector");
       const fragments = await loadProjectFragments(testDir);
@@ -250,10 +250,10 @@ describe("fragment-injector", () => {
     });
 
     it("should filter invalid entries same as global config", async () => {
-      const micodeDir = join(testDir, ".micode");
-      mkdirSync(micodeDir, { recursive: true });
+      const fiona-plugDir = join(testDir, ".fiona-plug");
+      mkdirSync(fiona-plugDir, { recursive: true });
       writeFileSync(
-        join(micodeDir, "fragments.json"),
+        join(fiona-plugDir, "fragments.json"),
         JSON.stringify({
           brainstormer: ["valid", "", 123],
           planner: "not-an-array",
@@ -285,11 +285,11 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 /**
- * Load project-level fragments from .micode/fragments.json
+ * Load project-level fragments from .fiona-plug/fragments.json
  * Returns empty object if file doesn't exist or is invalid
  */
 export async function loadProjectFragments(projectDir: string): Promise<Record<string, string[]>> {
-  const fragmentsPath = join(projectDir, ".micode", "fragments.json");
+  const fragmentsPath = join(projectDir, ".fiona-plug", "fragments.json");
 
   try {
     const content = await readFile(fragmentsPath, "utf-8");
@@ -537,10 +537,10 @@ Add to `tests/hooks/fragment-injector.test.ts`:
 describe("createFragmentInjectorHook", () => {
   it("should inject fragments at beginning of system prompt", async () => {
     // Create project fragments
-    const micodeDir = join(testDir, ".micode");
-    mkdirSync(micodeDir, { recursive: true });
+    const fiona-plugDir = join(testDir, ".fiona-plug");
+    mkdirSync(fiona-plugDir, { recursive: true });
     writeFileSync(
-      join(micodeDir, "fragments.json"),
+      join(fiona-plugDir, "fragments.json"),
       JSON.stringify({
         brainstormer: ["Project instruction"],
       }),
@@ -597,10 +597,10 @@ describe("createFragmentInjectorHook", () => {
   });
 
   it("should handle no global config", async () => {
-    const micodeDir = join(testDir, ".micode");
-    mkdirSync(micodeDir, { recursive: true });
+    const fiona-plugDir = join(testDir, ".fiona-plug");
+    mkdirSync(fiona-plugDir, { recursive: true });
     writeFileSync(
-      join(micodeDir, "fragments.json"),
+      join(fiona-plugDir, "fragments.json"),
       JSON.stringify({
         brainstormer: ["Project only instruction"],
       }),
@@ -837,9 +837,9 @@ export function warnUnknownAgents(fragmentAgents: string[], knownAgents: Set<str
     if (!knownAgents.has(agent)) {
       const closest = findClosestAgent(agent, knownAgents);
       if (closest) {
-        warnings.push(`[micode] Unknown agent "${agent}" in fragments config. Did you mean "${closest}"?`);
+        warnings.push(`[fiona-plug] Unknown agent "${agent}" in fragments config. Did you mean "${closest}"?`);
       } else {
-        warnings.push(`[micode] Unknown agent "${agent}" in fragments config.`);
+        warnings.push(`[fiona-plug] Unknown agent "${agent}" in fragments config.`);
       }
     }
   }
@@ -913,7 +913,7 @@ In the `"chat.params"` handler (around line 283), add at the **beginning** (befo
 Create a test config:
 ```bash
 mkdir -p ~/.config/opencode
-echo '{"fragments": {"brainstormer": ["Test instruction from config"]}}' > ~/.config/opencode/micode.json
+echo '{"fragments": {"brainstormer": ["Test instruction from config"]}}' > ~/.config/opencode/fiona-plug.json
 ```
 
 Start opencode and verify the brainstormer agent receives the fragment.
@@ -961,12 +961,12 @@ In `src/index.ts`, after creating the fragment hook, add validation:
 
 Add a typo to config:
 ```bash
-echo '{"fragments": {"brianstormer": ["Test"]}}' > ~/.config/opencode/micode.json
+echo '{"fragments": {"brianstormer": ["Test"]}}' > ~/.config/opencode/fiona-plug.json
 ```
 
 Start opencode and verify warning appears:
 ```
-[micode] Unknown agent "brianstormer" in fragments config. Did you mean "brainstormer"?
+[fiona-plug] Unknown agent "brianstormer" in fragments config. Did you mean "brainstormer"?
 ```
 
 **Step 4: Commit**

@@ -26,12 +26,12 @@ describe("fragment-injector", () => {
   });
 
   describe("loadProjectFragments", () => {
-    it("should load fragments from .micode/fragments.json", async () => {
-      // Create .micode directory and fragments.json
-      const micodeDir = join(testDir, ".micode");
-      mkdirSync(micodeDir, { recursive: true });
+    it("should load fragments from .fiona-plug/fragments.json", async () => {
+      // Create .fiona-plug directory and fragments.json
+      const fionaPlugDir = join(testDir, ".fiona-plug");
+      mkdirSync(fionaPlugDir, { recursive: true });
       writeFileSync(
-        join(micodeDir, "fragments.json"),
+        join(fionaPlugDir, "fragments.json"),
         JSON.stringify({
           brainstormer: ["Project-specific instruction"],
           implementer: ["Run tests after changes"],
@@ -45,7 +45,7 @@ describe("fragment-injector", () => {
       expect(fragments.implementer).toEqual(["Run tests after changes"]);
     });
 
-    it("should return empty object when .micode/fragments.json does not exist", async () => {
+    it("should return empty object when .fiona-plug/fragments.json does not exist", async () => {
       const { loadProjectFragments } = await import("../../src/hooks/fragment-injector");
       const fragments = await loadProjectFragments(testDir);
 
@@ -53,9 +53,9 @@ describe("fragment-injector", () => {
     });
 
     it("should return empty object for invalid JSON", async () => {
-      const micodeDir = join(testDir, ".micode");
-      mkdirSync(micodeDir, { recursive: true });
-      writeFileSync(join(micodeDir, "fragments.json"), "{ invalid json }");
+      const fionaPlugDir = join(testDir, ".fiona-plug");
+      mkdirSync(fionaPlugDir, { recursive: true });
+      writeFileSync(join(fionaPlugDir, "fragments.json"), "{ invalid json }");
 
       const { loadProjectFragments } = await import("../../src/hooks/fragment-injector");
       const fragments = await loadProjectFragments(testDir);
@@ -64,10 +64,10 @@ describe("fragment-injector", () => {
     });
 
     it("should filter invalid entries same as global config", async () => {
-      const micodeDir = join(testDir, ".micode");
-      mkdirSync(micodeDir, { recursive: true });
+      const fionaPlugDir = join(testDir, ".fiona-plug");
+      mkdirSync(fionaPlugDir, { recursive: true });
       writeFileSync(
-        join(micodeDir, "fragments.json"),
+        join(fionaPlugDir, "fragments.json"),
         JSON.stringify({
           brainstormer: ["valid", "", 123],
           planner: "not-an-array",
@@ -163,10 +163,10 @@ describe("fragment-injector", () => {
   describe("createFragmentInjectorHook", () => {
     it("should inject fragments at beginning of system prompt", async () => {
       // Create project fragments
-      const micodeDir = join(testDir, ".micode");
-      mkdirSync(micodeDir, { recursive: true });
+      const fionaPlugDir = join(testDir, ".fiona-plug");
+      mkdirSync(fionaPlugDir, { recursive: true });
       writeFileSync(
-        join(micodeDir, "fragments.json"),
+        join(fionaPlugDir, "fragments.json"),
         JSON.stringify({
           brainstormer: ["Project instruction"],
         }),
@@ -223,10 +223,10 @@ describe("fragment-injector", () => {
     });
 
     it("should handle no global config", async () => {
-      const micodeDir = join(testDir, ".micode");
-      mkdirSync(micodeDir, { recursive: true });
+      const fionaPlugDir = join(testDir, ".fiona-plug");
+      mkdirSync(fionaPlugDir, { recursive: true });
       writeFileSync(
-        join(micodeDir, "fragments.json"),
+        join(fionaPlugDir, "fragments.json"),
         JSON.stringify({
           brainstormer: ["Project only instruction"],
         }),

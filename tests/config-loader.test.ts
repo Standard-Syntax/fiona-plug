@@ -18,7 +18,7 @@ describe("config-loader", () => {
 
   beforeEach(() => {
     // Create a test config directory
-    testConfigDir = join(tmpdir(), `micode-config-test-${Date.now()}`);
+    testConfigDir = join(tmpdir(), `fiona-plug-config-test-${Date.now()}`);
     mkdirSync(testConfigDir, { recursive: true });
   });
 
@@ -26,13 +26,13 @@ describe("config-loader", () => {
     rmSync(testConfigDir, { recursive: true, force: true });
   });
 
-  it("should return null when micode.json does not exist", async () => {
+  it("should return null when fiona-plug.json does not exist", async () => {
     const config = await loadMicodeConfig(testConfigDir);
     expect(config).toBeNull();
   });
 
-  it("should load agent model overrides from micode.json", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+  it("should load agent model overrides from fiona-plug.json", async () => {
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -52,7 +52,7 @@ describe("config-loader", () => {
   });
 
   it("should return null for invalid JSON", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(configPath, "not json at all }{][");
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -60,7 +60,7 @@ describe("config-loader", () => {
   });
 
   it("should handle empty agents object", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(configPath, JSON.stringify({ agents: {} }));
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -70,7 +70,7 @@ describe("config-loader", () => {
   });
 
   it("should only allow safe properties (model, temperature, maxTokens)", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -98,7 +98,7 @@ describe("config-loader", () => {
   });
 
   it("should handle agents: null", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(configPath, JSON.stringify({ agents: null }));
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -108,7 +108,7 @@ describe("config-loader", () => {
   });
 
   it("should handle config with no agents key", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(configPath, JSON.stringify({ someOtherKey: "value" }));
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -118,7 +118,7 @@ describe("config-loader", () => {
   });
 
   it("should handle non-object agent entries", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -279,7 +279,7 @@ describe("loadMicodeConfig - compactionThreshold", () => {
   let testConfigDir: string;
 
   beforeEach(() => {
-    testConfigDir = join(tmpdir(), `micode-config-test-${Date.now()}`);
+    testConfigDir = join(tmpdir(), `fiona-plug-config-test-${Date.now()}`);
     mkdirSync(testConfigDir, { recursive: true });
   });
 
@@ -287,8 +287,8 @@ describe("loadMicodeConfig - compactionThreshold", () => {
     rmSync(testConfigDir, { recursive: true, force: true });
   });
 
-  it("should load compactionThreshold from micode.json", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+  it("should load compactionThreshold from fiona-plug.json", async () => {
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -303,7 +303,7 @@ describe("loadMicodeConfig - compactionThreshold", () => {
   });
 
   it("should handle compactionThreshold with other config", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -321,7 +321,7 @@ describe("loadMicodeConfig - compactionThreshold", () => {
   });
 
   it("should ignore invalid compactionThreshold values", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -335,7 +335,7 @@ describe("loadMicodeConfig - compactionThreshold", () => {
   });
 
   it("should ignore compactionThreshold outside valid range (0-1)", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -349,7 +349,7 @@ describe("loadMicodeConfig - compactionThreshold", () => {
   });
 
   it("should ignore negative compactionThreshold", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -367,7 +367,7 @@ describe("loadModelContextLimits", () => {
   let testConfigDir: string;
 
   beforeEach(() => {
-    testConfigDir = join(tmpdir(), `micode-config-test-${Date.now()}`);
+    testConfigDir = join(tmpdir(), `fiona-plug-config-test-${Date.now()}`);
     mkdirSync(testConfigDir, { recursive: true });
   });
 
@@ -471,7 +471,7 @@ describe("loadMicodeConfig - fragments", () => {
   let testConfigDir: string;
 
   beforeEach(() => {
-    testConfigDir = join(tmpdir(), `micode-config-test-${Date.now()}`);
+    testConfigDir = join(tmpdir(), `fiona-plug-config-test-${Date.now()}`);
     mkdirSync(testConfigDir, { recursive: true });
   });
 
@@ -479,8 +479,8 @@ describe("loadMicodeConfig - fragments", () => {
     rmSync(testConfigDir, { recursive: true, force: true });
   });
 
-  it("should load fragments from micode.json", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+  it("should load fragments from fiona-plug.json", async () => {
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -499,7 +499,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should handle empty fragments object", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(configPath, JSON.stringify({ fragments: {} }));
 
     const config = await loadMicodeConfig(testConfigDir);
@@ -508,7 +508,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should filter out non-string values in fragment arrays", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -524,7 +524,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should filter out empty strings from fragments", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -540,7 +540,7 @@ describe("loadMicodeConfig - fragments", () => {
   });
 
   it("should skip non-array fragment values", async () => {
-    const configPath = join(testConfigDir, "micode.json");
+    const configPath = join(testConfigDir, "fiona-plug.json");
     writeFileSync(
       configPath,
       JSON.stringify({
@@ -564,7 +564,7 @@ describe("JSONC parsing support", () => {
   let testConfigDir: string;
 
   beforeEach(() => {
-    testConfigDir = join(tmpdir(), `micode-jsonc-test-${Date.now()}`);
+    testConfigDir = join(tmpdir(), `fiona-plug-jsonc-test-${Date.now()}`);
     mkdirSync(testConfigDir, { recursive: true });
   });
 
@@ -573,8 +573,8 @@ describe("JSONC parsing support", () => {
   });
 
   describe("loadMicodeConfig with JSONC", () => {
-    it("should parse micode.jsonc with line comments", async () => {
-      const configPath = join(testConfigDir, "micode.jsonc");
+    it("should parse fiona-plug.jsonc with line comments", async () => {
+      const configPath = join(testConfigDir, "fiona-plug.jsonc");
       writeFileSync(
         configPath,
         `{
@@ -591,8 +591,8 @@ describe("JSONC parsing support", () => {
       expect(config?.agents?.commander?.model).toBe("openai/gpt-4o");
     });
 
-    it("should parse micode.jsonc with block comments", async () => {
-      const configPath = join(testConfigDir, "micode.jsonc");
+    it("should parse fiona-plug.jsonc with block comments", async () => {
+      const configPath = join(testConfigDir, "fiona-plug.jsonc");
       writeFileSync(
         configPath,
         `{
@@ -614,8 +614,8 @@ describe("JSONC parsing support", () => {
       expect(config?.agents?.brainstormer?.temperature).toBe(0.8);
     });
 
-    it("should parse micode.jsonc with trailing commas", async () => {
-      const configPath = join(testConfigDir, "micode.jsonc");
+    it("should parse fiona-plug.jsonc with trailing commas", async () => {
+      const configPath = join(testConfigDir, "fiona-plug.jsonc");
       writeFileSync(
         configPath,
         `{
@@ -637,17 +637,17 @@ describe("JSONC parsing support", () => {
       expect(config?.compactionThreshold).toBe(0.5);
     });
 
-    it("should prefer micode.jsonc over micode.json when both exist", async () => {
+    it("should prefer fiona-plug.jsonc over fiona-plug.json when both exist", async () => {
       // Write .json with one value
       writeFileSync(
-        join(testConfigDir, "micode.json"),
+        join(testConfigDir, "fiona-plug.json"),
         JSON.stringify({
           agents: { commander: { model: "openai/gpt-3.5" } },
         }),
       );
       // Write .jsonc with a different value
       writeFileSync(
-        join(testConfigDir, "micode.jsonc"),
+        join(testConfigDir, "fiona-plug.jsonc"),
         `{
   "agents": {
     "commander": { "model": "openai/gpt-4o" }
@@ -662,9 +662,9 @@ describe("JSONC parsing support", () => {
       expect(config?.agents?.commander?.model).toBe("openai/gpt-4o");
     });
 
-    it("should fall back to micode.json when micode.jsonc does not exist", async () => {
+    it("should fall back to fiona-plug.json when fiona-plug.jsonc does not exist", async () => {
       writeFileSync(
-        join(testConfigDir, "micode.json"),
+        join(testConfigDir, "fiona-plug.json"),
         JSON.stringify({
           agents: { commander: { model: "openai/gpt-4o" } },
         }),
@@ -676,13 +676,13 @@ describe("JSONC parsing support", () => {
       expect(config?.agents?.commander?.model).toBe("openai/gpt-4o");
     });
 
-    it("should return null when neither micode.jsonc nor micode.json exists", async () => {
+    it("should return null when neither fiona-plug.jsonc nor fiona-plug.json exists", async () => {
       const config = await loadMicodeConfig(testConfigDir);
       expect(config).toBeNull();
     });
 
-    it("should parse micode.jsonc with all comment types combined", async () => {
-      const configPath = join(testConfigDir, "micode.jsonc");
+    it("should parse fiona-plug.jsonc with all comment types combined", async () => {
+      const configPath = join(testConfigDir, "fiona-plug.jsonc");
       writeFileSync(
         configPath,
         `{

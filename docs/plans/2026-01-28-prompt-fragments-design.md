@@ -1,6 +1,6 @@
 # Prompt Fragments Design
 
-**Issue:** [#13 - How to adjust agent's system prompt from external config?](https://github.com/vtemian/micode/issues/13)
+**Issue:** [#13 - How to adjust agent's system prompt from external config?](https://github.com/Standard-Syntax/fiona-plug/issues/13)
 
 **Date:** 2026-01-28
 
@@ -12,7 +12,7 @@ Allow users to append custom instructions to agent prompts via external configur
 
 ### Global Fragments
 
-Location: `~/.config/opencode/micode.json`
+Location: `~/.config/opencode/fiona-plug.json`
 
 ```json
 {
@@ -32,7 +32,7 @@ Location: `~/.config/opencode/micode.json`
 
 ### Project Fragments
 
-Location: `.micode/fragments.json` (in project root)
+Location: `.fiona-plug/fragments.json` (in project root)
 
 ```json
 {
@@ -86,7 +86,7 @@ Key behaviors:
 2. **`src/hooks/fragment-injector.ts`** (new file)
    - Hook point: `chat.params`
    - Load global fragments from config
-   - Load project fragments from `.micode/fragments.json`
+   - Load project fragments from `.fiona-plug/fragments.json`
    - Concatenate and inject into system prompt beginning
 
 3. **`src/index.ts`**
@@ -95,7 +95,7 @@ Key behaviors:
 ### Data Flow
 
 ```
-micode.json (global)     .micode/fragments.json (project)
+fiona-plug.json (global)     .fiona-plug/fragments.json (project)
         |                            |
     config-loader              fragment-injector
         |                            |
@@ -129,7 +129,7 @@ micode.json (global)     .micode/fragments.json (project)
 ### Example Warning
 
 ```
-[micode] Unknown agent "brianstormer" in fragments config. Did you mean "brainstormer"?
+[fiona-plug] Unknown agent "brianstormer" in fragments config. Did you mean "brainstormer"?
 ```
 
 ## Security Considerations

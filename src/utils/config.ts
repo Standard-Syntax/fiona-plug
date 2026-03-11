@@ -131,7 +131,7 @@ export const config = {
    * Model settings
    */
   model: {
-    /** Plugin fallback model when no opencode.json or micode.json model is configured */
+    /** Plugin fallback model when no opencode.json or fiona-plug.json model is configured */
     default: "openai/gpt-5.2-codex",
   },
 
