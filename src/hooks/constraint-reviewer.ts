@@ -114,7 +114,9 @@ export function createConstraintReviewerHook(ctx: PluginInput, reviewFn: ReviewF
      */
     "chat.message": async (input: { sessionID: string }, output: { parts: Array<{ type: string; text?: string }> }) => {
       // Log for breakage detection - this is an undocumented hook
-      log.debug("constraint-reviewer", "chat.message hook fired (undocumented hook)");
+      await ctx.client.app.log({
+        body: { service: "fiona-plug", level: "debug", message: "chat.message hook fired for override detection (undocumented hook)" },
+      }).catch(() => {});
 
       // Check for override command
       const text = output.parts
