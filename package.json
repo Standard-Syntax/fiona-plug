@@ -1,5 +1,5 @@
 {
-  "name": "micode",
+  "name": "fiona-plug",
   "version": "0.10.0",
   "description": "OpenCode plugin with Brainstorm-Research-Plan-Implement workflow",
   "module": "dist/index.js",
@@ -29,15 +29,15 @@
     "plan",
     "implement"
   ],
-  "author": "vtemian",
+  "author": "Standard-Syntax",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vtemian/micode.git"
+    "url": "git+https://github.com/Standard-Syntax/fiona-plug.git"
   },
-  "homepage": "https://github.com/vtemian/micode#readme",
+  "homepage": "https://github.com/Standard-Syntax/fiona-plug#readme",
   "bugs": {
-    "url": "https://github.com/vtemian/micode/issues"
+    "url": "https://github.com/Standard-Syntax/fiona-plug/issues"
   },
   "dependencies": {
     "@opencode-ai/plugin": "1.1.23",
