@@ -299,7 +299,20 @@ const OpenCodeConfigPlugin: Plugin = async (ctx) => {
       };
     },
 
+    /**
+     * Undocumented hook from opencode.
+     * Used for think-mode keyword detection (e.g., "think deeply", "let me think").
+     * Risk: May break silently in future opencode versions without notice.
+     * @see https://github.com/Standard-Syntax/fiona-plug/issues/5
+     */
     "chat.message": async (input, output) => {
+      // Log for breakage detection - this is an undocumented hook
+      await ctx.client.app
+        .log({
+          body: { service: "fiona-plug", level: "debug", message: "chat.message hook fired for think-mode detection (undocumented hook)" },
+        })
+        .catch(() => {});
+
       // Extract text from user message
       const text = output.parts
         .filter((p) => p.type === "text" && "text" in p)
@@ -430,8 +443,25 @@ IMPORTANT:
       );
     },
 
+    /**
+     * Undocumented hook from opencode.
+     * Used for mindmodel task extraction and category matching.
+     * Risk: May break silently in future opencode versions without notice.
+     * @see https://github.com/Standard-Syntax/fiona-plug/issues/5
+     */
     // Transform messages: match task keywords and prepare mindmodel injection
     "experimental.chat.messages.transform": async (input, output) => {
+      // Log for breakage detection - this is an undocumented hook
+      await ctx.client.app
+        .log({
+          body: {
+            service: "fiona-plug",
+            level: "debug",
+            message: "experimental.chat.messages.transform hook fired (undocumented hook)",
+          },
+        })
+        .catch(() => {});
+
       if (!mindmodelInjectorHook) return;
       // Skip internal sessions (reviewer)
       const sessionID = (input as { sessionID?: string }).sessionID;

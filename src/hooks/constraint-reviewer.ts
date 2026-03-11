@@ -106,7 +106,18 @@ export function createConstraintReviewerHook(ctx: PluginInput, reviewFn: ReviewF
       }
     },
 
+    /**
+     * Undocumented hook from opencode.
+     * Used for detecting "override:" commands in chat messages.
+     * Risk: May break silently in future opencode versions without notice.
+     * @see https://github.com/Standard-Syntax/fiona-plug/issues/5
+     */
     "chat.message": async (input: { sessionID: string }, output: { parts: Array<{ type: string; text?: string }> }) => {
+      // Log for breakage detection - this is an undocumented hook
+      await ctx.client.app.log({
+        body: { service: "fiona-plug", level: "debug", message: "chat.message hook fired for override detection (undocumented hook)" },
+      }).catch(() => {});
+
       // Check for override command
       const text = output.parts
         .filter((p) => p.type === "text" && p.text)
