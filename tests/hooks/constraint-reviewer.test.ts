@@ -4,6 +4,217 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+describe("constraint-reviewer formatConstraintContent", () => {
+  it("should format constraint with rules", async () => {
+    const { createConstraintReviewerHook } = await import("../../src/hooks/constraint-reviewer");
+
+    const testDir = mkdtempSync(join(tmpdir(), "constraint-format-test-"));
+    try {
+      const mindmodelDir = join(testDir, ".mindmodel");
+      mkdirSync(mindmodelDir, { recursive: true });
+
+      writeFileSync(
+        join(mindmodelDir, "manifest.yaml"),
+        `name: test-project
+version: 2
+categories:
+  - path: style.md
+    description: Style constraints
+`,
+      );
+
+      writeFileSync(
+        join(mindmodelDir, "style.md"),
+        `# Style Constraints
+
+## Rules
+- Use const for immutable bindings
+- Use single quotes for strings
+`,
+      );
+
+      const mockCtx = { directory: testDir, client: { session: {}, tui: {} } };
+
+      let capturedPrompt = "";
+      const mockReviewFn = async (prompt: string) => {
+        capturedPrompt = prompt;
+        return '{"status": "PASS", "violations": [], "summary": "OK"}';
+      };
+
+      const hook = createConstraintReviewerHook(mockCtx as any, mockReviewFn);
+
+      await hook["tool.execute.after"](
+        { tool: "Write", sessionID: "test", args: { file_path: join(testDir, "test.ts") } },
+        { output: "const x = 'hello';" },
+      );
+
+      expect(capturedPrompt).toContain("## Project Constraints");
+      expect(capturedPrompt).toContain("## Style Constraints");
+      expect(capturedPrompt).toContain("### Rules");
+      expect(capturedPrompt).toContain("- Use const for immutable bindings");
+    } finally {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  it("should format constraint with examples", async () => {
+    const testDir = mkdtempSync(join(tmpdir(), "constraint-examples-test-"));
+    try {
+      const mindmodelDir = join(testDir, ".mindmodel");
+      mkdirSync(mindmodelDir, { recursive: true });
+
+      writeFileSync(
+        join(mindmodelDir, "manifest.yaml"),
+        `name: test-project
+version: 2
+categories:
+  - path: imports.md
+    description: Import constraints
+`,
+      );
+
+      writeFileSync(
+        join(mindmodelDir, "imports.md"),
+        `# Import Constraints
+
+## Examples
+### Absolute imports
+\`\`\`typescript
+import { Button } from "@/components/Button";
+\`\`\`
+`,
+      );
+
+      const mockCtx = { directory: testDir, client: { session: {}, tui: {} } };
+
+      let capturedPrompt = "";
+      const mockReviewFn = async (prompt: string) => {
+        capturedPrompt = prompt;
+        return '{"status": "PASS", "violations": [], "summary": "OK"}';
+      };
+
+      const { createConstraintReviewerHook } = await import("../../src/hooks/constraint-reviewer");
+      const hook = createConstraintReviewerHook(mockCtx as any, mockReviewFn);
+
+      await hook["tool.execute.after"](
+        { tool: "Write", sessionID: "test", args: { file_path: join(testDir, "test.ts") } },
+        { output: "import { Button } from '@/components/Button';" },
+      );
+
+      expect(capturedPrompt).toContain("### Examples");
+      expect(capturedPrompt).toContain("#### Absolute imports");
+      expect(capturedPrompt).toContain("```typescript");
+      expect(capturedPrompt).toContain('import { Button } from "@/components/Button"');
+    } finally {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  it("should format constraint with anti-patterns", async () => {
+    const testDir = mkdtempSync(join(tmpdir(), "constraint-antipatterns-test-"));
+    try {
+      const mindmodelDir = join(testDir, ".mindmodel");
+      mkdirSync(mindmodelDir, { recursive: true });
+
+      writeFileSync(
+        join(mindmodelDir, "manifest.yaml"),
+        `name: test-project
+version: 2
+categories:
+  - path: errors.md
+    description: Error handling
+`,
+      );
+
+      writeFileSync(
+        join(mindmodelDir, "errors.md"),
+        `# Error Handling
+
+## Anti-patterns
+### Silent catch
+\`\`\`javascript
+try {
+  doSomething();
+} catch (e) {
+  // silent
+}
+\`\`\`
+`,
+      );
+
+      const mockCtx = { directory: testDir, client: { session: {}, tui: {} } };
+
+      let capturedPrompt = "";
+      const mockReviewFn = async (prompt: string) => {
+        capturedPrompt = prompt;
+        return '{"status": "PASS", "violations": [], "summary": "OK"}';
+      };
+
+      const { createConstraintReviewerHook } = await import("../../src/hooks/constraint-reviewer");
+      const hook = createConstraintReviewerHook(mockCtx as any, mockReviewFn);
+
+      await hook["tool.execute.after"](
+        { tool: "Write", sessionID: "test", args: { file_path: join(testDir, "test.js") } },
+        { output: "try {} catch(e) {}" },
+      );
+
+      expect(capturedPrompt).toContain("### Anti-patterns");
+      expect(capturedPrompt).toContain("#### Silent catch");
+      expect(capturedPrompt).toContain("```javascript");
+    } finally {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  it("should show 'No constraint files found' for empty constraints", async () => {
+    const testDir = mkdtempSync(join(tmpdir(), "constraint-empty-test-"));
+    try {
+      const mindmodelDir = join(testDir, ".mindmodel");
+      mkdirSync(mindmodelDir, { recursive: true });
+
+      writeFileSync(
+        join(mindmodelDir, "manifest.yaml"),
+        `name: test-project
+version: 2
+categories:
+  - path: empty.md
+    description: Empty constraints
+`,
+      );
+
+      // Write a constraint file with no rules, examples, or anti-patterns
+      writeFileSync(
+        join(mindmodelDir, "empty.md"),
+        `# Empty Constraints
+
+Just some text without any structured sections.
+`,
+      );
+
+      const mockCtx = { directory: testDir, client: { session: {}, tui: {} } };
+
+      let capturedPrompt = "";
+      const mockReviewFn = async (prompt: string) => {
+        capturedPrompt = prompt;
+        return '{"status": "PASS", "violations": [], "summary": "OK"}';
+      };
+
+      const { createConstraintReviewerHook } = await import("../../src/hooks/constraint-reviewer");
+      const hook = createConstraintReviewerHook(mockCtx as any, mockReviewFn);
+
+      await hook["tool.execute.after"](
+        { tool: "Write", sessionID: "test", args: { file_path: join(testDir, "test.ts") } },
+        { output: "code" },
+      );
+
+      // Should still include the constraint file title even without sections
+      expect(capturedPrompt).toContain("## Empty Constraints");
+    } finally {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("createConstraintReviewerHook", () => {
   let testDir: string;
 
