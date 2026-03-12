@@ -5,7 +5,9 @@ import {
   formatViolationsForRetry,
   formatViolationsForUser,
   type LoadedMindmodel,
+  loadExamples,
   loadMindmodel,
+  parseConstraintFile,
   parseReviewResponse,
   type ReviewResult,
 } from "../mindmodel";
@@ -71,7 +73,7 @@ export function createConstraintReviewerHook(ctx: PluginInput, reviewFn: ReviewF
 
       try {
         // Build review prompt
-        const reviewPrompt = buildReviewPrompt(output.output || "", filePath, mindmodel);
+        const reviewPrompt = await buildReviewPrompt(output.output || "", filePath, mindmodel);
 
         // Call reviewer
         const reviewResponse = await reviewFn(reviewPrompt);
@@ -142,9 +144,60 @@ export function createConstraintReviewerHook(ctx: PluginInput, reviewFn: ReviewF
   };
 }
 
-function buildReviewPrompt(code: string, filePath: string, mindmodel: LoadedMindmodel): string {
-  // For now, include all constraints - selective loading can be added later
-  const constraintSummary = mindmodel.manifest.categories.map((c) => `- ${c.path}: ${c.description}`).join("\n");
+/**
+ * Formats parsed constraint files into a readable string for the review prompt.
+ */
+function formatConstraintContent(constraints: ReturnType<typeof parseConstraintFile>[]): string {
+  if (constraints.length === 0) return "No constraint files found.";
+
+  return constraints
+    .map((c) => {
+      let block = `## ${c.title}\n`;
+
+      // Add rules
+      if (c.rules.length > 0) {
+        block += `### Rules\n`;
+        c.rules.forEach((rule) => {
+          block += `- ${rule}\n`;
+        });
+        block += "\n";
+      }
+
+      // Add examples
+      if (c.examples.length > 0) {
+        block += `### Examples\n`;
+        c.examples.forEach((ex) => {
+          block += `#### ${ex.title}\n`;
+          block += `\`\`\`${ex.language}\n${ex.code}\n\`\`\`\n`;
+        });
+      }
+
+      // Add anti-patterns
+      if (c.antiPatterns.length > 0) {
+        block += `### Anti-patterns\n`;
+        c.antiPatterns.forEach((ap) => {
+          block += `#### ${ap.title}\n`;
+          block += `\`\`\`${ap.language}\n${ap.code}\n\`\`\`\n`;
+        });
+      }
+
+      return block;
+    })
+    .join("\n---\n\n");
+}
+
+async function buildReviewPrompt(code: string, filePath: string, mindmodel: LoadedMindmodel): Promise<string> {
+  // Get all category paths
+  const categoryPaths = mindmodel.manifest.categories.map((c) => c.path);
+
+  // Load constraint file contents
+  const examples = await loadExamples(mindmodel, categoryPaths);
+
+  // Parse each constraint file
+  const parsedConstraints = examples.map((ex) => parseConstraintFile(ex.content));
+
+  // Format constraint content
+  const constraintContent = formatConstraintContent(parsedConstraints);
 
   return `Review this generated code against project constraints.
 
@@ -155,8 +208,9 @@ Code:
 ${code}
 \`\`\`
 
-Available constraints:
-${constraintSummary}
+## Project Constraints
+
+${constraintContent}
 
 Return JSON with status "PASS" or "BLOCKED" and any violations found.`;
 }
